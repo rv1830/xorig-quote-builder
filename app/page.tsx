@@ -4,7 +4,7 @@ import EditorPanel from '@/components/EditorPanel';
 import PreviewPage from '@/components/PreviewPage';
 import CropModal from '@/components/CropModal';
 import { QuoteState } from '@/types/quote';
-import { PARTS_TEMPLATE } from '@/lib/utils';
+import { PARTS_TEMPLATE, fmtINR } from '@/lib/utils';
 
 export default function Home() {
   const [state, setState] = useState<QuoteState>({
@@ -24,97 +24,134 @@ export default function Home() {
   const [pendingCrop, setPendingCrop] = useState<string | null>(null);
 
   const handlePdf = async () => {
-    const el = document.getElementById('quoteRoot');
-    if (!el) return;
+    const previewEl = document.getElementById('quoteRoot');
+    if (!previewEl) return;
+
+    // 🔥 Current theme detect karna (Dark or Light)
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    const currentTheme = isDarkMode ? 'dark' : 'light';
 
     try {
-      // --- IMAGE TO BASE64 CONVERSION START ---
-      // Puppeteer local images nahi dekh pata, isliye hum unhe Base64 mein badal rahe hain
-      const images = el.getElementsByTagName('img');
+      // 1. Image Conversion (Logo/Build Pic) to Base64
+      const images = previewEl.getElementsByTagName('img');
       for (let img of Array.from(images)) {
         if (img.src && !img.src.startsWith('data:')) {
           try {
-            const response = await fetch(img.src);
-            const blob = await response.blob();
-            const base64 = await new Promise((resolve) => {
+            const res = await fetch(img.src);
+            const blob = await res.blob();
+            const b64 = await new Promise((r) => {
               const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result);
+              reader.onloadend = () => r(reader.result);
               reader.readAsDataURL(blob);
             });
-            img.src = base64 as string;
-          } catch (imgErr) {
-            console.warn("Could not convert image to base64:", img.src);
-          }
+            img.src = b64 as string;
+          } catch (e) { console.warn("Img conversion failed", e); }
         }
       }
-      // --- IMAGE TO BASE64 CONVERSION END ---
 
+      // 2. Capture all CSS rules
       const styles = Array.from(document.styleSheets)
-        .map((styleSheet) => {
-          try {
-            return Array.from(styleSheet.cssRules)
-              .map((rule) => rule.cssText)
-              .join('');
-          } catch (e) {
-            return '';
+        .map(s => { 
+          try { 
+            return Array.from(s.cssRules).map(r => r.cssText).join(''); 
+          } catch { 
+            return ''; 
           }
-        })
-        .join('');
+        }).join('');
 
+      // 3. Page 1: Quote Builder Data (Theme Aware)
+      const editorDataHtml = `
+        <div style="padding: 40px; font-family: sans-serif; color: var(--foreground); background: var(--background); min-height: 297mm;">
+          <h2 style="border-bottom: 3px solid var(--accent); padding-bottom: 12px; color: var(--accent); text-transform: uppercase; font-weight: 900; letter-spacing: -0.05em;">Quote Builder</h2>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; font-size: 14px;">
+            <div style="border-left: 2px solid var(--accent); padding-left: 15px;">
+              <p style="margin: 0; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold;">Reference</p>
+              <p style="margin: 5px 0 0 0; font-weight: 900;">#${state.quoteNo || '—'}</p>
+              <p style="margin: 2px 0 0 0; color: var(--muted);">${state.quoteDate}</p>
+            </div>
+            <div style="border-left: 2px solid var(--muted); padding-left: 15px;">
+              <p style="margin: 0; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold;">Customer</p>
+              <p style="margin: 5px 0 0 0; font-weight: 900;">${state.customer.name || 'Customer'}</p>
+              <p style="margin: 2px 0 0 0; color: var(--muted);">${state.customer.phone || '—'}</p>
+            </div>
+          </div>
+
+          <table style="width: 100%; margin-top: 40px; border-collapse: collapse; background: var(--input-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <thead>
+              <tr style="background: var(--accent); color: var(--accent-foreground);">
+                <th style="padding: 15px; text-align: left; font-size: 11px; text-transform: uppercase;">Category</th>
+                <th style="padding: 15px; text-align: left; font-size: 11px; text-transform: uppercase;">Specifications</th>
+                <th style="padding: 15px; text-align: right; font-size: 11px; text-transform: uppercase;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.parts.map(p => p.model ? `
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 12px 15px; font-size: 11px; font-weight: 900; color: var(--accent); text-transform: uppercase;">${p.category}</td>
+                  <td style="padding: 12px 15px; font-size: 12px; font-weight: bold; color: var(--foreground);">${p.model}</td>
+                  <td style="padding: 12px 15px; font-size: 12px; text-align: right; font-weight: 900;">${p.qty} x ${fmtINR(p.rate)}</td>
+                </tr>
+              ` : '').join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // 4. Combine everything for Puppeteer
       const htmlContent = `
         <!DOCTYPE html>
-        <html data-theme="${document.documentElement.getAttribute('data-theme') || 'dark'}">
+        <html data-theme="${currentTheme}">
           <head>
             <meta charset="utf-8">
             <style>${styles}</style>
             <style>
+              @page { size: A4 portrait; margin: 0; }
               body { 
-                background: transparent !important; 
-                margin: 0 !important; 
-                padding: 0 !important;
-                -webkit-print-color-adjust: exact;
+                background: var(--background) !important; 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
               }
-              #quoteRoot { 
-                margin: 0 !important; 
-                box-shadow: none !important; 
+              .pdf-page { 
                 width: 210mm; 
-                min-height: 297mm;
-                height: auto;
-                overflow: visible;
+                min-height: 297mm; 
+                display: block; 
+                break-after: page; 
+                position: relative;
+                background: var(--background);
               }
+              .last-page { break-after: auto; }
+              #quoteRoot { width: 210mm; margin: 0 !important; box-shadow: none !important; transform: none !important; }
             </style>
           </head>
           <body>
-            ${el.outerHTML}
+            <div class="pdf-page">${editorDataHtml}</div>
+            <div class="pdf-page last-page">${previewEl.outerHTML}</div>
           </body>
         </html>
       `;
 
+      // 5. API Call to Puppeteer
       const response = await fetch('/api/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          html: htmlContent, 
-          theme: document.documentElement.getAttribute('data-theme') || 'dark' 
-        }),
+        body: JSON.stringify({ html: htmlContent, theme: currentTheme }),
       });
 
       if (!response.ok) throw new Error('PDF conversion failed');
-
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `XO-RIG-${state.quoteNo || 'Quote'}.pdf`);
+      link.setAttribute('download', `XO-RIG-Report-${state.quoteNo || 'Quote'}.pdf`);
       document.body.appendChild(link);
       link.click();
-      
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
 
     } catch (err) {
-      console.error("Puppeteer Client Error:", err);
-      alert("Direct download failed. Opening print preview instead.");
+      console.error("PDF Error:", err);
       window.print();
     }
   };
@@ -128,7 +165,6 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 lg:p-8 flex items-center justify-center relative">
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-[var(--background)] via-[var(--card-bg)] to-[var(--background)] opacity-50" />
-      
       <div className="max-w-[1440px] w-full mx-auto grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-10">
         <EditorPanel 
           state={state} 
@@ -140,16 +176,11 @@ export default function Home() {
           <PreviewPage state={state} />
         </div>
       </div>
-
       {pendingCrop && (
-        <CropModal 
-          src={pendingCrop} 
-          onClose={() => setPendingCrop(null)} 
-          onApply={(url) => {
-            setState(s => ({ ...s, imageUrl: url }));
-            setPendingCrop(null);
-          }} 
-        />
+        <CropModal src={pendingCrop} onClose={() => setPendingCrop(null)} onApply={(url) => {
+          setState(s => ({ ...s, imageUrl: url }));
+          setPendingCrop(null);
+        }} />
       )}
     </main>
   );
