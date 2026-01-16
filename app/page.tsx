@@ -23,8 +23,9 @@ export default function Home() {
 
   const [pendingCrop, setPendingCrop] = useState<string | null>(null);
 
-  const handlePdf = async () => {
-    // Dynamic import for client-side only
+const handlePdf = async () => {
+  try {
+    // @ts-ignore - html2pdf.js has no types
     const html2pdf = (await import('html2pdf.js')).default;
     const el = document.getElementById('quoteRoot');
     
@@ -36,27 +37,28 @@ export default function Home() {
     const opt = {
       margin: 0,
       filename: `XO-RIG-${state.quoteNo || 'Quote'}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 }, 
+      image: { type: 'jpeg', quality: 0.98 }, 
       html2canvas: { 
-        scale: 3, 
+        scale: 2,
         useCORS: true,
         logging: false,
         letterRendering: true
       },
       jsPDF: { 
-        unit: 'mm' as const, 
-        format: 'a4' as const, 
-        orientation: 'portrait' as const 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait' 
       }
     };
     
-    // 🔥 PDF GENERATION FIX
-    try {
-      await html2pdf().set(opt).from(el).save();
-    } catch (err) {
-      console.error("PDF Generation Error:", err);
-    }
-  };
+    // @ts-ignore
+    await html2pdf().set(opt).from(el).save();
+    
+  } catch (err) {
+    console.error("PDF Generation Error:", err);
+    window.print();
+  }
+};
 
   const onImageFile = (file: File) => {
     const reader = new FileReader();

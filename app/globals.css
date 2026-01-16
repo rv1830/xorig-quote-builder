@@ -46,3 +46,33 @@ select option {
   background-color: var(--card-bg);
   color: var(--foreground);
 }
+
+/* Print styles for better PDF generation */
+@media print {
+  @page {
+    margin: 0;
+    size: A4 portrait;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  #quoteRoot {
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/* Hide elements during PDF generation */
+@media print {
+  button, 
+  input, 
+  select, 
+  .no-print {
+    display: none !important;
+  }
+}

@@ -4,6 +4,7 @@ import { QuoteState } from '@/types/quote';
 import { safeNum } from '@/lib/utils';
 import { FileText, Calendar, User, Phone, Image as ImageIcon, Percent, Hash, Printer, Download, Cpu, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { Loader2 } from 'lucide-react';
 
 interface Props {
   state: QuoteState;
@@ -15,6 +16,17 @@ interface Props {
 export default function EditorPanel({ state, setState, onPdf, onImageFile }: Props) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  const [isGenerating, setIsGenerating] = useState(false);
+
+const handlePdfClick = async () => {
+  setIsGenerating(true);
+  try {
+    await onPdf(); // Ensure onPdf is an async function or returns a promise
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   useEffect(() => {
     setMounted(true);
@@ -163,13 +175,32 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
       </div>
 
       <div className="flex gap-3">
-        <button onClick={onPdf} className="flex-1 bg-[var(--accent)] text-black p-4 rounded-2xl text-[11px] font-black uppercase tracking-tighter hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
-          <Download size={14}/> Generate PDF
-        </button>
-        <button onClick={() => window.print()} className="bg-[var(--input-bg)] text-[var(--foreground)] p-4 rounded-2xl hover:bg-[var(--card-border)] transition-all active:scale-95 border border-[var(--card-border)]">
-          <Printer size={16}/>
-        </button>
-      </div>
+  <button 
+    onClick={handlePdfClick} 
+    disabled={isGenerating}
+    className={`
+      flex-1 bg-[var(--accent)] text-black p-4 rounded-2xl text-[11px] font-black uppercase tracking-tighter 
+      flex items-center justify-center gap-2 shadow-lg transition-all
+      ${isGenerating ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:scale-[1.02] active:scale-95'}
+    `}
+  >
+    {isGenerating ? (
+      <>
+        <Loader2 size={14} className="animate-spin" />
+        Generating...
+      </>
+    ) : (
+      <>
+        <Download size={14}/> 
+        Generate PDF
+      </>
+    )}
+  </button>
+  
+  {/* <button onClick={() => window.print()} className="bg-[var(--input-bg)] text-[var(--foreground)] p-4 rounded-2xl hover:bg-[var(--card-border)] transition-all active:scale-95 border border-[var(--card-border)]">
+    <Printer size={16}/>
+  </button> */}
+</div>
     </aside>
   );
 }
