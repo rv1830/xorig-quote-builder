@@ -23,15 +23,18 @@ export default function PreviewPage({ state }: { state: QuoteState }) {
         {/* Header Section */}
         <div className="flex justify-between items-start mb-10">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[#10002B] rounded-xl flex items-center justify-center text-[#FDC500] shadow-lg">
-                <Cpu size={24} strokeWidth={2.5} />
+            <div className="flex items-center gap-3 ">
+              <div className="w-24 h-12 flex items-center justify-center">
+                <img 
+                  src="/Full Logo SVG Yellow.svg" 
+                  alt="XO RIG Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <div>
-                <h1 className="text-3xl font-[900] italic tracking-tighter text-[var(--foreground)] leading-none">XO RIG</h1>
-                <p className="text-[9px] font-black tracking-[0.4em] text-[#FDC500] uppercase mt-1">Next-Gen Ecosystem</p>
-              </div>
+              
+               
             </div>
+            <p className="text-[9px] font-black tracking-[0.4em] text-[#FDC500] uppercase ">Love at First Boot!</p>
             
             <div className="mt-10 grid grid-cols-2 gap-10">
                <div className="border-l-2 border-[#FDC500] pl-4">
@@ -53,7 +56,6 @@ export default function PreviewPage({ state }: { state: QuoteState }) {
             </div>
            <div className="mt-12 pr-4">
    <p className="text-[8px] uppercase font-black text-[var(--muted)] mb-1 tracking-widest">Valid Until</p>
-   {/* 🔥 FIX: Yahan bg aur text color ko theme ke hisaab se update kiya gaya hai */}
    <p className="text-[10px] font-black uppercase bg-[var(--accent)] text-black dark:bg-[#FDC500]/20 dark:text-[#FDC500] px-3 py-1.5 rounded-lg border border-[var(--accent)]/20 inline-block shadow-sm transition-all">
       {state.validTill || "7 Days from issue"}
    </p>
@@ -82,7 +84,6 @@ export default function PreviewPage({ state }: { state: QuoteState }) {
             <tbody className="text-[11px]">
               {(visibleParts.length ? visibleParts : [{category:'System', model:'No hardware selected', qty:0, rate:0}]).map((p, i) => (
                 <tr key={i} className="group border-b border-[var(--card-border)]">
-                  {/* 🔥 Category color fix: Now using Electric Lavender/Gold accent for dark mode compatibility */}
                   <td className="py-4 font-black text-[var(--accent)] uppercase text-[9px] tracking-tight">{p.category}</td>
                   <td className="py-4 font-bold text-[var(--foreground)]/90">{p.model}</td>
                   <td className="py-4 text-center tabular-nums text-[var(--muted)] font-black">{p.qty || "—"}</td>
@@ -152,7 +153,6 @@ export default function PreviewPage({ state }: { state: QuoteState }) {
                 {state.imageUrl ? (
                   <img src={state.imageUrl} className="w-full h-full object-cover" alt="PC Build" />
                 ) : (
-                  // 🔥 Spec Preview Fix: Added better visibility and text centering
                   <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--input-bg)]">
                     <ImageIcon size={48} className="text-[var(--muted)] opacity-30" strokeWidth={1} />
                     <span className="text-[10px] font-black uppercase mt-3 italic tracking-[0.3em] text-[var(--muted)] opacity-40">Build Preview</span>
