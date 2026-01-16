@@ -37,7 +37,7 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
   if (!mounted) return null;
 
   return (
-    <aside className="backdrop-blur-xl bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 lg:sticky lg:top-8 h-fit shadow-2xl">
+    <aside className="backdrop-blur-xl bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 lg:sticky lg:top-8 h-fit shadow-2xl w-full lg:w-[480px]">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[var(--accent)] rounded-lg shadow-[0_0_15px_rgba(253,197,0,0.3)]">
