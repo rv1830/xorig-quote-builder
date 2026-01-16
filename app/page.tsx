@@ -66,14 +66,16 @@ export default function Home() {
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; font-size: 14px;">
             <div style="border-left: 2px solid var(--accent); padding-left: 15px;">
-              <p style="margin: 0; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold;">Reference</p>
+              <p style="margin: 0; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold;">Reference & Build</p>
               <p style="margin: 5px 0 0 0; font-weight: 900;">#${state.quoteNo || '—'}</p>
-              <p style="margin: 2px 0 0 0; color: var(--muted);">${state.quoteDate}</p>
+              <p style="margin: 2px 0 0 0; font-weight: 800; color: var(--accent);">${state.buildName || 'CUSTOM RIG'}</p>
+              <p style="margin: 2px 0 0 0; color: var(--muted); font-size: 11px;">Date: ${state.quoteDate}</p>
+              <p style="margin: 2px 0 0 0; color: var(--muted); font-size: 11px;">Valid Till: ${state.validTill || '7 Days'}</p>
             </div>
             <div style="border-left: 2px solid var(--muted); padding-left: 15px;">
-              <p style="margin: 0; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold;">Customer</p>
+              <p style="margin: 0; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold;">Customer Details</p>
               <p style="margin: 5px 0 0 0; font-weight: 900;">${state.customer.name || 'Customer'}</p>
-              <p style="margin: 2px 0 0 0; color: var(--muted);">${state.customer.phone || '—'}</p>
+              <p style="margin: 2px 0 0 0; color: var(--muted); font-weight: bold;">${state.customer.phone || '—'}</p>
             </div>
           </div>
 
