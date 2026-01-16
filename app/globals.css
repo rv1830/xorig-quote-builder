@@ -41,3 +41,8 @@ body {
   background: var(--accent);
   border-radius: 10px;
 }
+
+select option {
+  background-color: var(--card-bg);
+  color: var(--foreground);
+}

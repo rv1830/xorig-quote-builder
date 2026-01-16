@@ -16,7 +16,6 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Hydration error se bachne ke liye mounted check zaroori hai
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -46,7 +45,6 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
           <h2 className="text-xl font-black italic tracking-tighter uppercase text-[var(--foreground)]">QUOTE BUILDER</h2>
         </div>
         
-        {/* 🔥 WORKING TOGGLE BUTTON */}
         <button 
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="p-2.5 rounded-xl bg-[var(--input-bg)] hover:scale-110 transition-all border border-[var(--card-border)] shadow-sm"
@@ -136,15 +134,29 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="p-3 bg-[var(--input-bg)] rounded-2xl border border-[var(--card-border)]">
           <label className={labelClass}><Percent size={12}/> Discount</label>
-          <select className="w-full bg-transparent border border-[var(--card-border)] rounded-lg p-2 text-xs text-[var(--foreground)] mb-2" value={state.discountType} onChange={e => setState(s => ({...s, discountType: e.target.value as any}))}>
-            <option value="">None</option><option value="amount">Fixed ₹</option><option value="percent">Percent %</option>
+          {/* 🔥 Dropdown Fix Applied Here */}
+          <select 
+            className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-2 text-xs text-[var(--foreground)] mb-2 outline-none" 
+            value={state.discountType} 
+            onChange={e => setState(s => ({...s, discountType: e.target.value as any}))}
+          >
+            <option className="bg-[var(--card-bg)]" value="">None</option>
+            <option className="bg-[var(--card-bg)]" value="amount">Fixed ₹</option>
+            <option className="bg-[var(--card-bg)]" value="percent">Percent %</option>
           </select>
           <input type="number" className={inputClass} value={state.discountValue} onChange={e => setState(s => ({...s, discountValue: safeNum(e.target.value)}))} />
         </div>
         <div className="p-3 bg-[var(--input-bg)] rounded-2xl border border-[var(--card-border)]">
           <label className={labelClass}><Percent size={12}/> GST Tax</label>
-          <select className="w-full bg-transparent border border-[var(--card-border)] rounded-lg p-2 text-xs text-[var(--foreground)] mb-2" value={state.gstType} onChange={e => setState(s => ({...s, gstType: e.target.value as any}))}>
-            <option value="">None</option><option value="percent">Percent %</option><option value="amount">Fixed ₹</option>
+          {/* 🔥 Dropdown Fix Applied Here */}
+          <select 
+            className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-2 text-xs text-[var(--foreground)] mb-2 outline-none" 
+            value={state.gstType} 
+            onChange={e => setState(s => ({...s, gstType: e.target.value as any}))}
+          >
+            <option className="bg-[var(--card-bg)]" value="">None</option>
+            <option className="bg-[var(--card-bg)]" value="percent">Percent %</option>
+            <option className="bg-[var(--card-bg)]" value="amount">Fixed ₹</option>
           </select>
           <input type="number" className={inputClass} value={state.gstValue} onChange={e => setState(s => ({...s, gstValue: safeNum(e.target.value)}))} />
         </div>
