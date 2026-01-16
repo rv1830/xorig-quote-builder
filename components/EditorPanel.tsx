@@ -2,31 +2,29 @@
 import React, { useEffect, useState } from 'react';
 import { QuoteState } from '@/types/quote';
 import { safeNum } from '@/lib/utils';
-import { FileText, Calendar, User, Phone, Image as ImageIcon, Percent, Hash, Printer, Download, Cpu, Sun, Moon } from 'lucide-react';
+import { FileText, Calendar, User, Phone, Image as ImageIcon, Percent, Hash, Printer, Download, Cpu, Sun, Moon, Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Loader2 } from 'lucide-react';
 
 interface Props {
   state: QuoteState;
   setState: React.Dispatch<React.SetStateAction<QuoteState>>;
-  onPdf: () => void;
+  onPdf: () => Promise<void>;
   onImageFile: (file: File) => void;
 }
 
 export default function EditorPanel({ state, setState, onPdf, onImageFile }: Props) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-
   const [isGenerating, setIsGenerating] = useState(false);
 
-const handlePdfClick = async () => {
-  setIsGenerating(true);
-  try {
-    await onPdf(); // Ensure onPdf is an async function or returns a promise
-  } finally {
-    setIsGenerating(false);
-  }
-};
+  const handlePdfClick = async () => {
+    setIsGenerating(true);
+    try {
+      await onPdf();
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -146,7 +144,6 @@ const handlePdfClick = async () => {
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="p-3 bg-[var(--input-bg)] rounded-2xl border border-[var(--card-border)]">
           <label className={labelClass}><Percent size={12}/> Discount</label>
-          {/* 🔥 Dropdown Fix Applied Here */}
           <select 
             className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-2 text-xs text-[var(--foreground)] mb-2 outline-none" 
             value={state.discountType} 
@@ -160,7 +157,6 @@ const handlePdfClick = async () => {
         </div>
         <div className="p-3 bg-[var(--input-bg)] rounded-2xl border border-[var(--card-border)]">
           <label className={labelClass}><Percent size={12}/> GST Tax</label>
-          {/* 🔥 Dropdown Fix Applied Here */}
           <select 
             className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-2 text-xs text-[var(--foreground)] mb-2 outline-none" 
             value={state.gstType} 
@@ -174,32 +170,24 @@ const handlePdfClick = async () => {
         </div>
       </div>
 
-      <div className="flex gap-3">
+<div className="flex gap-3">
+  {/* 🔥 Generate PDF (API Call) */}
   <button 
-    onClick={handlePdfClick} 
+    onClick={handlePdfClick} // Ye function handlePdf (API) ko call karta hai
     disabled={isGenerating}
-    className={`
-      flex-1 bg-[var(--accent)] text-black p-4 rounded-2xl text-[11px] font-black uppercase tracking-tighter 
-      flex items-center justify-center gap-2 shadow-lg transition-all
-      ${isGenerating ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:scale-[1.02] active:scale-95'}
-    `}
+    className="flex-1 bg-[var(--accent)] text-black p-4 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-2"
   >
-    {isGenerating ? (
-      <>
-        <Loader2 size={14} className="animate-spin" />
-        Generating...
-      </>
-    ) : (
-      <>
-        <Download size={14}/> 
-        Generate PDF
-      </>
-    )}
+    {isGenerating ? <Loader2 className="animate-spin" size={14} /> : <Download size={14} />}
+    {isGenerating ? "Generating..." : "Generate PDF"}
   </button>
   
-  {/* <button onClick={() => window.print()} className="bg-[var(--input-bg)] text-[var(--foreground)] p-4 rounded-2xl hover:bg-[var(--card-border)] transition-all active:scale-95 border border-[var(--card-border)]">
+  {/* 🔥 Printer (Old Manual Print) */}
+  <button 
+    onClick={() => window.print()} 
+    className="bg-[var(--input-bg)] text-[var(--foreground)] p-4 rounded-2xl border border-[var(--card-border)]"
+  >
     <Printer size={16}/>
-  </button> */}
+  </button>
 </div>
     </aside>
   );

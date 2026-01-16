@@ -76,3 +76,10 @@ select option {
     display: none !important;
   }
 }
+
+/* globals.css mein sabse neeche ye dalo */
+#quoteRoot, #quoteRoot * {
+  /* Tailwind v4 ke modern color functions ko override karne ke liye */
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+}
