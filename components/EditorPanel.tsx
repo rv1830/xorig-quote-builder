@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { QuoteState } from '@/types/quote';
 import { safeNum } from '@/lib/utils';
 import { FileText, Calendar, User, Phone, Image as ImageIcon, Percent, Hash, Printer, Download, Cpu, Sun, Moon } from 'lucide-react';
@@ -14,6 +14,12 @@ interface Props {
 
 export default function EditorPanel({ state, setState, onPdf, onImageFile }: Props) {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Hydration error se bachne ke liye mounted check zaroori hai
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const updateCustomer = (k: string, v: string) => {
     setState(s => ({ ...s, customer: { ...s.customer, [k]: v } }));
@@ -28,26 +34,32 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
   const inputClass = "w-full bg-[var(--input-bg)] border border-[var(--card-border)] rounded-xl p-2.5 text-xs text-[var(--foreground)] placeholder:text-[var(--foreground)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all";
   const labelClass = "text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest mb-1 flex items-center gap-1.5";
 
+  if (!mounted) return null;
+
   return (
     <aside className="backdrop-blur-xl bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 lg:sticky lg:top-8 h-fit shadow-2xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[var(--accent)] rounded-lg">
+          <div className="p-2 bg-[var(--accent)] rounded-lg shadow-[0_0_15px_rgba(253,197,0,0.3)]">
             <Cpu className="text-black w-5 h-5" />
           </div>
-          <h2 className="text-xl font-black italic tracking-tighter uppercase">QUOTE BUILDER</h2>
+          <h2 className="text-xl font-black italic tracking-tighter uppercase text-[var(--foreground)]">QUOTE BUILDER</h2>
         </div>
         
-        {/* Theme Toggle Button */}
+        {/* 🔥 WORKING TOGGLE BUTTON */}
         <button 
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-full bg-[var(--input-bg)] hover:scale-110 transition-all border border-[var(--card-border)]"
+          className="p-2.5 rounded-xl bg-[var(--input-bg)] hover:scale-110 transition-all border border-[var(--card-border)] shadow-sm"
+          aria-label="Toggle Theme"
         >
-          {theme === 'dark' ? <Sun size={18} className="text-[var(--accent)]" /> : <Moon size={18} className="text-[var(--foreground)]" />}
+          {theme === 'dark' ? (
+            <Sun size={18} className="text-[var(--accent)]" />
+          ) : (
+            <Moon size={18} className="text-[var(--foreground)]" />
+          )}
         </button>
       </div>
       
-      {/* Meta Section */}
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -86,14 +98,13 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
           <label className={labelClass}><ImageIcon size={12}/> Build Image</label>
           <div className="relative border-2 border-dashed border-[var(--card-border)] rounded-xl p-4 hover:border-[var(--accent)] transition-colors group">
             <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => e.target.files?.[0] && onImageFile(e.target.files[0])} />
-            <div className="text-center text-[10px] text-[var(--foreground)]/50 uppercase font-bold tracking-widest">Click to upload build pic</div>
+            <div className="text-center text-[10px] text-[var(--foreground)] opacity-50 uppercase font-bold tracking-widest">Click to upload build pic</div>
           </div>
         </div>
       </div>
 
       <div className="h-px bg-gradient-to-r from-transparent via-[var(--card-border)] to-transparent my-8" />
 
-      {/* Parts Table Editor */}
       <div className="rounded-2xl overflow-hidden border border-[var(--card-border)] bg-[var(--input-bg)] mb-6">
         <table className="w-full text-left border-collapse">
           <thead className="bg-[var(--accent)] text-black text-[9px] font-black uppercase tracking-tighter">
@@ -106,8 +117,10 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
           <tbody>
             {state.parts.map((p, i) => (
               <tr key={i} className="border-b border-[var(--card-border)] hover:bg-[var(--card-bg)] transition-colors">
-                <td className="p-3 text-[10px] font-bold text-[var(--foreground)]/70 whitespace-nowrap uppercase">{p.category}</td>
-                <td className="p-2"><input className="w-full bg-transparent border border-[var(--card-border)] rounded-lg p-1.5 text-[10px] text-[var(--foreground)]" value={p.model} onChange={e => updatePart(i, 'model', e.target.value)} /></td>
+                <td className="p-3 text-[10px] font-bold text-[var(--foreground)] opacity-70 whitespace-nowrap uppercase">{p.category}</td>
+                <td className="p-2">
+                  <input className="w-full bg-transparent border border-[var(--card-border)] rounded-lg p-1.5 text-[10px] text-[var(--foreground)]" value={p.model} onChange={e => updatePart(i, 'model', e.target.value)} />
+                </td>
                 <td className="p-2">
                   <div className="flex gap-1.5">
                     <input type="number" className="w-10 bg-transparent border border-[var(--card-border)] rounded-lg p-1.5 text-[10px] text-right" value={p.qty} onChange={e => updatePart(i, 'qty', e.target.value)} />
@@ -120,7 +133,6 @@ export default function EditorPanel({ state, setState, onPdf, onImageFile }: Pro
         </table>
       </div>
 
-      {/* Discount & GST */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="p-3 bg-[var(--input-bg)] rounded-2xl border border-[var(--card-border)]">
           <label className={labelClass}><Percent size={12}/> Discount</label>
